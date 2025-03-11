@@ -94,16 +94,21 @@ async def guide(message: types.Message):
 async def fallback(message: types.Message):
     await message.answer("⚡ Vui lòng chọn một chức năng:", reply_markup=menu_keyboard)
 
-# Chạy bot & server web
-async def main():
-    loop = asyncio.get_event_loop()
-    loop.create_task(dp.start_polling(bot))
-    
-    # Gửi thông báo khi bot khởi động
+# Chạy bot & FastAPI server đúng cách
+async def start_bot():
     if ADMIN_ID:
-        await bot.send_message(ADMIN_ID, "✅ Bot đã khởi động thành công!")
+        try:
+            await bot.send_message(ADMIN_ID, "✅ Bot đã khởi động thành công!")
+        except Exception as e:
+            print(f"⚠️ Không thể gửi tin nhắn đến admin: {e}")
+    await dp.start_polling(bot)
 
-    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8080)))
+# Chạy bot trong event loop
+def run():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.create_task(start_bot())  # Chạy bot
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8080)))  # Chạy web server
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    run()
