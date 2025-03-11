@@ -1,9 +1,11 @@
 import os
 import asyncio
+import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-import logging
+from fastapi import FastAPI
+import uvicorn
 
 # Bật logging để kiểm tra bot có nhận tin nhắn không
 logging.basicConfig(level=logging.INFO)
@@ -15,10 +17,12 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# Kiểm tra khi bot khởi động
-async def on_startup():
-    print("✅ Bot đã khởi động!")
-    logging.info("✅ Bot đang chạy!")
+# Tạo Web Server giả để Render không báo lỗi cổng
+app = FastAPI()
+
+@app.get("/")
+async def home():
+    return {"status": "Bot is running!"}
 
 # Lệnh /start
 @dp.message(Command("start"))
@@ -32,10 +36,19 @@ async def handle_message(message: types.Message):
     logging.info(f"📩 Nhận tin nhắn từ {message.from_user.id}: {message.text}")
     await message.answer("⚡ Bạn vừa gửi: " + message.text)
 
-# Chạy bot
-async def main():
-    await on_startup()  # Kiểm tra bot đã khởi động chưa
-    await dp.start_polling(bot)
+# Chạy bot Telegram trong background
+async def start_bot():
+    try:
+        logging.info("✅ Bắt đầu chạy bot Telegram...")
+        await dp.start_polling(bot)
+    except Exception as e:
+        logging.error(f"❌ Lỗi bot: {e}")
+
+# Chạy bot & web server cùng lúc
+def run():
+    loop = asyncio.get_event_loop()
+    loop.create_task(start_bot())  # Chạy bot Telegram song song
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8080)))  # Chạy web server
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    run()
