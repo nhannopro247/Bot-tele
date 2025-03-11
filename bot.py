@@ -38,11 +38,13 @@ async def handle_message(message: types.Message):
 
 # Chạy bot Telegram trong background
 async def start_bot():
-    try:
-        logging.info("✅ Bắt đầu chạy bot Telegram...")
-        await dp.start_polling(bot)
-    except Exception as e:
-        logging.error(f"❌ Lỗi bot: {e}")
+    while True:
+        try:
+            logging.info("✅ Bắt đầu chạy bot Telegram...")
+            await dp.start_polling(bot)
+        except Exception as e:
+            logging.error(f"❌ Lỗi bot: {e}")
+        await asyncio.sleep(5)  # Nếu bot bị lỗi, thử lại sau 5 giây
 
 # Chạy bot & web server cùng lúc
 def run():
