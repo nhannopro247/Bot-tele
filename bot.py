@@ -9,7 +9,7 @@ import uvicorn
 
 # Lấy token bot & admin ID từ biến môi trường
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))  # ID admin (mặc định 0 nếu chưa có)
+ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))  # Mặc định 0 nếu chưa đặt
 
 # Khởi tạo bot & dispatcher
 bot = Bot(token=BOT_TOKEN)
@@ -65,7 +65,7 @@ async def process_video_link(message: types.Message):
     except Exception as e:
         await message.answer(f"❌ Lỗi: {str(e)}")
 
-# Xử lý nút bấm "📢 Gửi thông báo" (chỉ Admin mới thấy)
+# Xử lý nút bấm "📢 Gửi thông báo" (Chỉ admin mới gửi được)
 @dp.message(lambda message: message.text == "📢 Gửi thông báo")
 async def admin_broadcast(message: types.Message):
     if message.from_user.id == ADMIN_ID:
